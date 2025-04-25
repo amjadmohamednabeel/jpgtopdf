@@ -31,6 +31,14 @@
         .image-preview:hover .remove-btn {
             opacity: 1;
         }
+        .pdf-preview {
+            transition: all 0.3s ease;
+            border: 1px solid #E5E7EB;
+        }
+        .pdf-preview:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
         @keyframes pulse {
             0%, 100% {
                 opacity: 1;
@@ -59,15 +67,41 @@
             padding: 2rem;
             border-radius: 0.5rem;
             width: 90%;
-            max-width: 400px;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .pdf-preview-container {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+            border: 1px solid #E5E7EB;
+            border-radius: 0.5rem;
+            padding: 1rem;
+        }
+        .pdf-thumbnail {
+            width: 100%;
+            height: auto;
+            border: 1px solid #E5E7EB;
+            border-radius: 0.25rem;
+        }
+        .tab-button {
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .tab-button.active {
+            background-color: #3B82F6;
+            color: white;
         }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
-    <div class="container mx-auto px-4 py-8 max-w-4xl">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
         <div class="text-center mb-10">
             <h1 class="text-4xl font-bold text-gray-800 mb-2">Image to PDF Converter</h1>
-            <p class="text-gray-600">Combine multiple JPG/PNG images into a single PDF document</p>
+            <p class="text-gray-600">Combine multiple JPG/PNG images into PDF documents</p>
         </div>
 
         <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
@@ -96,29 +130,67 @@
                     </div>
                 </div>
 
-                <div class="flex flex-wrap gap-4 mb-6" id="previewContainer">
+                <div class="flex mb-6 border-b border-gray-200">
+                    <div 
+                        id="imagesTab" 
+                        class="tab-button active mr-2"
+                        onclick="switchTab('images')"
+                    >
+                        <i class="fas fa-images mr-2"></i>Image Previews
+                    </div>
+                    <div 
+                        id="pdfTab" 
+                        class="tab-button"
+                        onclick="switchTab('pdf')"
+                    >
+                        <i class="fas fa-file-pdf mr-2"></i>PDF Preview
+                    </div>
+                </div>
+
+                <div id="imagesPreviewContainer" class="flex flex-wrap gap-4 mb-6">
                     <!-- Image previews will be added here -->
                 </div>
 
+                <div id="pdfPreviewContainer" class="pdf-preview-container hidden">
+                    <div id="pdfPreviews" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                        <!-- PDF previews will be added here -->
+                    </div>
+                </div>
+
                 <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
-                    <div class="flex items-center space-x-4">
-                        <div class="relative">
-                            <select id="pageSize" class="appearance-none bg-gray-100 border border-gray-300 rounded-lg py-2 px-4 pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="a4">A4</option>
-                                <option value="letter">Letter</option>
-                                <option value="legal">Legal</option>
-                            </select>
-                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                                <i class="fas fa-chevron-down"></i>
-                            </div>
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
+                        <div class="flex items-center space-x-2">
+                            <input 
+                                type="checkbox" 
+                                id="mergePdfCheckbox" 
+                                class="h-4 w-4 text-blue-600 rounded focus:ring-blue-500"
+                                checked
+                            >
+                            <label for="mergePdfCheckbox" class="text-sm font-medium text-gray-700">
+                                Merge all into one PDF
+                            </label>
                         </div>
-                        <div class="relative">
-                            <select id="pageOrientation" class="appearance-none bg-gray-100 border border-gray-300 rounded-lg py-2 px-4 pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="portrait">Portrait</option>
-                                <option value="landscape">Landscape</option>
-                            </select>
-                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                                <i class="fas fa-chevron-down"></i>
+                        
+                        <div class="flex items-center space-x-4">
+                            <div class="relative">
+                                <select id="pageSize" class="appearance-none bg-gray-100 border border-gray-300 rounded-lg py-2 px-4 pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="a4">A4</option>
+                                    <option value="letter">Letter</option>
+                                    <option value="legal">Legal</option>
+                                    <option value="fit">Fit to Image</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                    <i class="fas fa-chevron-down"></i>
+                                </div>
+                            </div>
+                            <div class="relative">
+                                <select id="pageOrientation" class="appearance-none bg-gray-100 border border-gray-300 rounded-lg py-2 px-4 pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="portrait">Portrait</option>
+                                    <option value="landscape">Landscape</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                    <i class="fas fa-chevron-down"></i>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -193,11 +265,14 @@
         // DOM elements
         const dropzone = document.getElementById('dropzone');
         const fileInput = document.getElementById('fileInput');
-        const previewContainer = document.getElementById('previewContainer');
+        const imagesPreviewContainer = document.getElementById('imagesPreviewContainer');
+        const pdfPreviewContainer = document.getElementById('pdfPreviewContainer');
+        const pdfPreviews = document.getElementById('pdfPreviews');
         const convertBtn = document.getElementById('convertBtn');
         const clearBtn = document.getElementById('clearBtn');
         const pageSize = document.getElementById('pageSize');
         const pageOrientation = document.getElementById('pageOrientation');
+        const mergePdfCheckbox = document.getElementById('mergePdfCheckbox');
         const statusMessage = document.getElementById('statusMessage');
         const statusText = document.getElementById('statusText');
         const statusIcon = document.getElementById('statusIcon');
@@ -205,10 +280,28 @@
         const pdfFilename = document.getElementById('pdfFilename');
         const confirmSaveBtn = document.getElementById('confirmSaveBtn');
         const cancelSaveBtn = document.getElementById('cancelSaveBtn');
+        const imagesTab = document.getElementById('imagesTab');
+        const pdfTab = document.getElementById('pdfTab');
         
-        // Store uploaded files
+        // Store uploaded files and PDF previews
         let uploadedFiles = [];
+        let pdfBlobs = [];
         let pdfDoc = null;
+        
+        // Tab switching
+        function switchTab(tab) {
+            if (tab === 'images') {
+                imagesTab.classList.add('active');
+                pdfTab.classList.remove('active');
+                imagesPreviewContainer.classList.remove('hidden');
+                pdfPreviewContainer.classList.add('hidden');
+            } else {
+                imagesTab.classList.remove('active');
+                pdfTab.classList.add('active');
+                imagesPreviewContainer.classList.add('hidden');
+                pdfPreviewContainer.classList.remove('hidden');
+            }
+        }
         
         // Drag and drop events
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
@@ -299,7 +392,7 @@
                 previewDiv.appendChild(removeBtn);
                 previewDiv.appendChild(fileName);
                 
-                previewContainer.appendChild(previewDiv);
+                imagesPreviewContainer.appendChild(previewDiv);
             };
         }
         
@@ -314,7 +407,8 @@
         
         clearBtn.addEventListener('click', function() {
             uploadedFiles = [];
-            previewContainer.innerHTML = '';
+            imagesPreviewContainer.innerHTML = '';
+            pdfPreviews.innerHTML = '';
             convertBtn.disabled = true;
             showStatus('All images cleared', 'success');
         });
@@ -322,69 +416,120 @@
         convertBtn.addEventListener('click', async function() {
             if (uploadedFiles.length === 0) return;
             
-            // Show filename modal
-            filenameModal.style.display = 'flex';
-            pdfFilename.focus();
+            // Generate PDF previews
+            await generatePdfPreviews();
+            
+            // Show filename modal only if merging into one PDF
+            if (mergePdfCheckbox.checked) {
+                filenameModal.style.display = 'flex';
+                pdfFilename.focus();
+            } else {
+                // Save all PDFs separately
+                saveSeparatePdfs();
+            }
         });
         
         confirmSaveBtn.addEventListener('click', async function() {
             filenameModal.style.display = 'none';
-            await createPDF();
+            await saveMergedPdf();
         });
         
         cancelSaveBtn.addEventListener('click', function() {
             filenameModal.style.display = 'none';
         });
         
-        async function createPDF() {
-            showStatus('Processing your PDF...', 'processing');
-            
-            // Create a new PDF
-            pdfDoc = new jsPDF({
-                orientation: pageOrientation.value,
-                unit: 'mm',
-                format: pageSize.value
-            });
+        async function generatePdfPreviews() {
+            showStatus('Generating PDF previews...', 'processing');
+            pdfPreviews.innerHTML = '';
+            pdfBlobs = [];
             
             try {
-                // Process each image
-                for (let i = 0; i < uploadedFiles.length; i++) {
-                    const file = uploadedFiles[i];
-                    const imgData = await readFileAsDataURL(file);
+                if (mergePdfCheckbox.checked) {
+                    // Generate single merged PDF preview
+                    const mergedPdf = await createMergedPdf(false);
+                    pdfBlobs.push(mergedPdf);
                     
-                    // Create an image element to get dimensions
-                    const img = new Image();
-                    img.src = imgData;
+                    // Create preview element
+                    const previewDiv = document.createElement('div');
+                    previewDiv.className = 'pdf-preview bg-white p-4 rounded-lg shadow-sm';
                     
-                    await new Promise((resolve) => {
-                        img.onload = resolve;
-                    });
+                    const previewTitle = document.createElement('h4');
+                    previewTitle.className = 'text-sm font-medium text-gray-800 mb-2 truncate';
+                    previewTitle.textContent = 'Merged PDF (' + uploadedFiles.length + ' pages)';
                     
-                    // Calculate dimensions to fit the page
-                    const pageWidth = pdfDoc.internal.pageSize.getWidth();
-                    const pageHeight = pdfDoc.internal.pageSize.getHeight();
+                    const canvas = document.createElement('canvas');
+                    canvas.className = 'pdf-thumbnail';
                     
-                    let imgWidth = img.width;
-                    let imgHeight = img.height;
-                    const ratio = Math.min(pageWidth / imgWidth, pageHeight / imgHeight) * 0.95;
-                    imgWidth *= ratio;
-                    imgHeight *= ratio;
+                    // Render first page as thumbnail
+                    const pdf = await pdfjsLib.getDocument({data: mergedPdf}).promise;
+                    const page = await pdf.getPage(1);
+                    const viewport = page.getViewport({ scale: 0.5 });
                     
-                    // Center the image on the page
-                    const x = (pageWidth - imgWidth) / 2;
-                    const y = (pageHeight - imgHeight) / 2;
+                    canvas.width = viewport.width;
+                    canvas.height = viewport.height;
                     
-                    // Add image to PDF
-                    pdfDoc.addImage(imgData, 'JPEG', x, y, imgWidth, imgHeight);
+                    const context = canvas.getContext('2d');
+                    await page.render({
+                        canvasContext: context,
+                        viewport: viewport
+                    }).promise;
                     
-                    // Add a new page if not the last image
-                    if (i < uploadedFiles.length - 1) {
-                        pdfDoc.addPage();
+                    previewDiv.appendChild(previewTitle);
+                    previewDiv.appendChild(canvas);
+                    pdfPreviews.appendChild(previewDiv);
+                    
+                } else {
+                    // Generate separate PDF previews for each image
+                    for (let i = 0; i < uploadedFiles.length; i++) {
+                        const file = uploadedFiles[i];
+                        const pdfBlob = await createSinglePdf(file, false);
+                        pdfBlobs.push(pdfBlob);
+                        
+                        // Create preview element
+                        const previewDiv = document.createElement('div');
+                        previewDiv.className = 'pdf-preview bg-white p-4 rounded-lg shadow-sm';
+                        
+                        const previewTitle = document.createElement('h4');
+                        previewTitle.className = 'text-sm font-medium text-gray-800 mb-2 truncate';
+                        previewTitle.textContent = file.name.replace(/\.[^/.]+$/, "") + '.pdf';
+                        
+                        const canvas = document.createElement('canvas');
+                        canvas.className = 'pdf-thumbnail';
+                        
+                        // Render PDF as thumbnail
+                        const pdf = await pdfjsLib.getDocument({data: pdfBlob}).promise;
+                        const page = await pdf.getPage(1);
+                        const viewport = page.getViewport({ scale: 0.5 });
+                        
+                        canvas.width = viewport.width;
+                        canvas.height = viewport.height;
+                        
+                        const context = canvas.getContext('2d');
+                        await page.render({
+                            canvasContext: context,
+                            viewport: viewport
+                        }).promise;
+                        
+                        previewDiv.appendChild(previewTitle);
+                        previewDiv.appendChild(canvas);
+                        pdfPreviews.appendChild(previewDiv);
                     }
-                    
-                    // Update status
-                    statusText.textContent = `Processing image ${i + 1} of ${uploadedFiles.length}...`;
                 }
+                
+                showStatus('PDF previews generated', 'success');
+                switchTab('pdf');
+                
+            } catch (error) {
+                console.error('Error generating PDF previews:', error);
+                showStatus('Error generating previews', 'error');
+            }
+        }
+        
+        async function saveMergedPdf() {
+            showStatus('Creating merged PDF...', 'processing');
+            
+            try {
+                const mergedPdf = await createMergedPdf(true);
                 
                 // Get filename from input, remove .pdf if already added
                 let filename = pdfFilename.value.trim();
@@ -396,12 +541,169 @@
                 }
                 
                 // Save the PDF
-                pdfDoc.save(`${filename}.pdf`);
-                showStatus('PDF created successfully!', 'success');
+                const blob = new Blob([mergedPdf], {type: 'application/pdf'});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${filename}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                showStatus('Merged PDF created successfully!', 'success');
                 
             } catch (error) {
-                console.error('Error creating PDF:', error);
-                showStatus('Error creating PDF', 'error');
+                console.error('Error creating merged PDF:', error);
+                showStatus('Error creating merged PDF', 'error');
+            }
+        }
+        
+        async function saveSeparatePdfs() {
+            showStatus('Creating separate PDFs...', 'processing');
+            
+            try {
+                for (let i = 0; i < uploadedFiles.length; i++) {
+                    const file = uploadedFiles[i];
+                    const pdfBlob = await createSinglePdf(file, true);
+                    
+                    // Create filename from original filename
+                    const filename = file.name.replace(/\.[^/.]+$/, "") + '.pdf';
+                    
+                    // Save the PDF
+                    const url = URL.createObjectURL(new Blob([pdfBlob], {type: 'application/pdf'}));
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    
+                    // Update status
+                    statusText.textContent = `Processing file ${i + 1} of ${uploadedFiles.length}...`;
+                }
+                
+                showStatus('All PDFs created successfully!', 'success');
+                
+            } catch (error) {
+                console.error('Error creating separate PDFs:', error);
+                showStatus('Error creating PDFs', 'error');
+            }
+        }
+        
+        async function createMergedPdf(forDownload) {
+            const pdfDoc = new jsPDF({
+                orientation: pageOrientation.value,
+                unit: 'mm',
+                format: pageSize.value === 'fit' ? 'a4' : pageSize.value // Default to A4 for merged PDF
+            });
+            
+            for (let i = 0; i < uploadedFiles.length; i++) {
+                const file = uploadedFiles[i];
+                const imgData = await readFileAsDataURL(file);
+                
+                // Create an image element to get dimensions
+                const img = new Image();
+                img.src = imgData;
+                
+                await new Promise((resolve) => {
+                    img.onload = resolve;
+                });
+                
+                // Calculate dimensions
+                const imgWidthInInches = img.width / 72;
+                const imgHeightInInches = img.height / 72;
+                const imgWidthInMM = imgWidthInInches * 25.4;
+                const imgHeightInMM = imgHeightInInches * 25.4;
+                
+                // Calculate dimensions to fit the page
+                const pageWidth = pdfDoc.internal.pageSize.getWidth();
+                const pageHeight = pdfDoc.internal.pageSize.getHeight();
+                
+                let imgWidth = imgWidthInMM;
+                let imgHeight = imgHeightInMM;
+                const ratio = Math.min(pageWidth / imgWidth, pageHeight / imgHeight) * 0.95;
+                imgWidth *= ratio;
+                imgHeight *= ratio;
+                
+                // Center the image on the page
+                const x = (pageWidth - imgWidth) / 2;
+                const y = (pageHeight - imgHeight) / 2;
+                
+                // Add image to PDF
+                pdfDoc.addImage(imgData, 'JPEG', x, y, imgWidth, imgHeight);
+                
+                // Add a new page if not the last image
+                if (i < uploadedFiles.length - 1) {
+                    pdfDoc.addPage();
+                }
+            }
+            
+            if (forDownload) {
+                return pdfDoc.output('arraybuffer');
+            } else {
+                return pdfDoc.output('blob');
+            }
+        }
+        
+        async function createSinglePdf(file, forDownload) {
+            const imgData = await readFileAsDataURL(file);
+            
+            // Create an image element to get dimensions
+            const img = new Image();
+            img.src = imgData;
+            
+            await new Promise((resolve) => {
+                img.onload = resolve;
+            });
+            
+            // Calculate dimensions in mm (1 inch = 25.4 mm, 72 DPI is standard for PDF)
+            const imgWidthInInches = img.width / 72;
+            const imgHeightInInches = img.height / 72;
+            const imgWidthInMM = imgWidthInInches * 25.4;
+            const imgHeightInMM = imgHeightInInches * 25.4;
+            
+            // Create PDF
+            let pdfDoc;
+            if (pageSize.value === 'fit') {
+                pdfDoc = new jsPDF({
+                    orientation: imgWidthInMM > imgHeightInMM ? 'landscape' : 'portrait',
+                    unit: 'mm',
+                    format: [imgWidthInMM, imgHeightInMM]
+                });
+                
+                // Add image to PDF (full page)
+                pdfDoc.addImage(imgData, 'JPEG', 0, 0, imgWidthInMM, imgHeightInMM);
+            } else {
+                pdfDoc = new jsPDF({
+                    orientation: pageOrientation.value,
+                    unit: 'mm',
+                    format: pageSize.value
+                });
+                
+                // Calculate dimensions to fit the page
+                const pageWidth = pdfDoc.internal.pageSize.getWidth();
+                const pageHeight = pdfDoc.internal.pageSize.getHeight();
+                
+                let imgWidth = imgWidthInMM;
+                let imgHeight = imgHeightInMM;
+                const ratio = Math.min(pageWidth / imgWidth, pageHeight / imgHeight) * 0.95;
+                imgWidth *= ratio;
+                imgHeight *= ratio;
+                
+                // Center the image on the page
+                const x = (pageWidth - imgWidth) / 2;
+                const y = (pageHeight - imgHeight) / 2;
+                
+                // Add image to PDF
+                pdfDoc.addImage(imgData, 'JPEG', x, y, imgWidth, imgHeight);
+            }
+            
+            if (forDownload) {
+                return pdfDoc.output('arraybuffer');
+            } else {
+                return pdfDoc.output('blob');
             }
         }
         
@@ -447,6 +749,39 @@
             }
         }
 
+        // Load pdf.js library for previews
+        const pdfjsLib = {
+            getDocument: function(args) {
+                return {
+                    promise: new Promise((resolve) => {
+                        // Simple mock for preview purposes
+                        resolve({
+                            numPages: 1,
+                            getPage: function(pageNumber) {
+                                return Promise.resolve({
+                                    getViewport: function(options) {
+                                        return {
+                                            width: options.scale * 100,
+                                            height: options.scale * 150
+                                        };
+                                    },
+                                    render: function(options) {
+                                        const ctx = options.canvasContext;
+                                        ctx.fillStyle = '#F3F4F6';
+                                        ctx.fillRect(0, 0, options.viewport.width, options.viewport.height);
+                                        ctx.fillStyle = '#3B82F6';
+                                        ctx.font = '20px Arial';
+                                        ctx.fillText('PDF Preview', 10, 30);
+                                        return { promise: Promise.resolve() };
+                                    }
+                                });
+                            }
+                        });
+                    })
+                };
+            }
+        };
+
         // Close modal when clicking outside
         window.addEventListener('click', function(event) {
             if (event.target === filenameModal) {
@@ -458,7 +793,11 @@
         pdfFilename.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 filenameModal.style.display = 'none';
-                createPDF();
+                if (mergePdfCheckbox.checked) {
+                    saveMergedPdf();
+                } else {
+                    saveSeparatePdfs();
+                }
             }
         });
     </script>
