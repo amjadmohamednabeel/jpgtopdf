@@ -211,6 +211,16 @@
                                         <i class="fas fa-chevron-down"></i>
                                     </div>
                                 </div>
+                                <div class="relative">
+                                    <select id="previewMarginSize" class="appearance-none bg-gray-100 border border-gray-300 rounded-lg py-2 px-4 pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <option value="none">No Margin</option>
+                                        <option value="small">Small Margin</option>
+                                        <option value="big">Big Margin</option>
+                                    </select>
+                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                        <i class="fas fa-chevron-down"></i>
+                                    </div>
+                                </div>
                             </div>
                             <button 
                                 id="updatePreviewBtn"
@@ -260,6 +270,16 @@
                                 <select id="pageOrientation" class="appearance-none bg-gray-100 border border-gray-300 rounded-lg py-2 px-4 pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                     <option value="portrait">Portrait</option>
                                     <option value="landscape">Landscape</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                    <i class="fas fa-chevron-down"></i>
+                                </div>
+                            </div>
+                            <div class="relative">
+                                <select id="marginSize" class="appearance-none bg-gray-100 border border-gray-300 rounded-lg py-2 px-4 pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="none">No Margin</option>
+                                    <option value="small">Small Margin</option>
+                                    <option value="big">Big Margin</option>
                                 </select>
                                 <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
                                     <i class="fas fa-chevron-down"></i>
@@ -345,10 +365,12 @@
         const clearBtn = document.getElementById('clearBtn');
         const pageSize = document.getElementById('pageSize');
         const pageOrientation = document.getElementById('pageOrientation');
+        const marginSize = document.getElementById('marginSize');
         const mergePdfCheckbox = document.getElementById('mergePdfCheckbox');
         const previewMergePdfCheckbox = document.getElementById('previewMergePdfCheckbox');
         const previewPageSize = document.getElementById('previewPageSize');
         const previewPageOrientation = document.getElementById('previewPageOrientation');
+        const previewMarginSize = document.getElementById('previewMarginSize');
         const updatePreviewBtn = document.getElementById('updatePreviewBtn');
         const statusMessage = document.getElementById('statusMessage');
         const statusText = document.getElementById('statusText');
@@ -510,6 +532,7 @@
             previewMergePdfCheckbox.checked = mergePdfCheckbox.checked;
             previewPageSize.value = pageSize.value;
             previewPageOrientation.value = pageOrientation.value;
+            previewMarginSize.value = marginSize.value;
             
             // Generate PDF previews
             await generatePdfPreviews();
@@ -544,6 +567,7 @@
             mergePdfCheckbox.checked = previewMergePdfCheckbox.checked;
             pageSize.value = previewPageSize.value;
             pageOrientation.value = previewPageOrientation.value;
+            marginSize.value = previewMarginSize.value;
             
             await generatePdfPreviews();
         });
@@ -626,14 +650,46 @@
                         ctx.lineWidth = 1;
                         ctx.strokeRect(0, 0, canvas.width, canvas.height);
                         
-                        // Draw image placeholder
+                        // Calculate margin based on selection
+                        let margin = 0;
+                        switch (previewMarginSize.value) {
+                            case 'small':
+                                margin = 10 * scale;
+                                break;
+                            case 'big':
+                                margin = 20 * scale;
+                                break;
+                            default: // none
+                                margin = 0;
+                        }
+                        
+                        // Draw image placeholder with margin
                         ctx.fillStyle = '#F3F4F6';
-                        ctx.fillRect(10 * scale, 10 * scale, canvas.width - 20 * scale, canvas.height - 20 * scale);
+                        ctx.fillRect(
+                            margin, 
+                            margin, 
+                            canvas.width - (margin * 2), 
+                            canvas.height - (margin * 2)
+                        );
                         
                         // Draw text
                         ctx.fillStyle = '#3B82F6';
                         ctx.font = `${14 * scale}px Arial`;
                         ctx.fillText('Page ' + (i + 1), 15 * scale, 30 * scale);
+                        
+                        // Draw margin indicator
+                        if (margin > 0) {
+                            ctx.strokeStyle = '#3B82F6';
+                            ctx.lineWidth = 1;
+                            ctx.setLineDash([2, 2]);
+                            ctx.strokeRect(
+                                margin, 
+                                margin, 
+                                canvas.width - (margin * 2), 
+                                canvas.height - (margin * 2)
+                            );
+                            ctx.setLineDash([]);
+                        }
                         
                         // Draw page number
                         const pageNumber = document.createElement('div');
@@ -722,14 +778,46 @@
                         ctx.lineWidth = 1;
                         ctx.strokeRect(0, 0, canvas.width, canvas.height);
                         
-                        // Draw image placeholder
+                        // Calculate margin based on selection
+                        let margin = 0;
+                        switch (previewMarginSize.value) {
+                            case 'small':
+                                margin = 10 * scale;
+                                break;
+                            case 'big':
+                                margin = 20 * scale;
+                                break;
+                            default: // none
+                                margin = 0;
+                        }
+                        
+                        // Draw image placeholder with margin
                         ctx.fillStyle = '#F3F4F6';
-                        ctx.fillRect(10 * scale, 10 * scale, canvas.width - 20 * scale, canvas.height - 20 * scale);
+                        ctx.fillRect(
+                            margin, 
+                            margin, 
+                            canvas.width - (margin * 2), 
+                            canvas.height - (margin * 2)
+                        );
                         
                         // Draw text
                         ctx.fillStyle = '#3B82F6';
                         ctx.font = `${12 * scale}px Arial`;
                         ctx.fillText('PDF Preview', 15 * scale, 30 * scale);
+                        
+                        // Draw margin indicator
+                        if (margin > 0) {
+                            ctx.strokeStyle = '#3B82F6';
+                            ctx.lineWidth = 1;
+                            ctx.setLineDash([2, 2]);
+                            ctx.strokeRect(
+                                margin, 
+                                margin, 
+                                canvas.width - (margin * 2), 
+                                canvas.height - (margin * 2)
+                            );
+                            ctx.setLineDash([]);
+                        }
                         
                         previewDiv.appendChild(fileName);
                         previewDiv.appendChild(canvas);
@@ -817,6 +905,7 @@
         async function createMergedPdf(forDownload, isPreview = false) {
             const orientation = isPreview ? previewPageOrientation.value : pageOrientation.value;
             const size = isPreview ? previewPageSize.value : pageSize.value;
+            const margin = isPreview ? previewMarginSize.value : marginSize.value;
             
             const pdfDoc = new jsPDF({
                 orientation: orientation,
@@ -846,15 +935,31 @@
                 const pageWidth = pdfDoc.internal.pageSize.getWidth();
                 const pageHeight = pdfDoc.internal.pageSize.getHeight();
                 
-                let imgWidth = imgWidthInMM;
-                let imgHeight = imgHeightInMM;
-                const ratio = Math.min(pageWidth / imgWidth, pageHeight / imgHeight) * 0.95;
-                imgWidth *= ratio;
-                imgHeight *= ratio;
+                // Calculate margin size in mm
+                let marginSize = 0;
+                switch (margin) {
+                    case 'small':
+                        marginSize = 10;
+                        break;
+                    case 'big':
+                        marginSize = 20;
+                        break;
+                    default: // none
+                        marginSize = 0;
+                }
                 
-                // Center the image on the page
-                const x = (pageWidth - imgWidth) / 2;
-                const y = (pageHeight - imgHeight) / 2;
+                // Calculate available space after margins
+                const availableWidth = pageWidth - (marginSize * 2);
+                const availableHeight = pageHeight - (marginSize * 2);
+                
+                // Calculate ratio to fit image within available space
+                const ratio = Math.min(availableWidth / imgWidthInMM, availableHeight / imgHeightInMM);
+                const imgWidth = imgWidthInMM * ratio;
+                const imgHeight = imgHeightInMM * ratio;
+                
+                // Center the image on the page with margins
+                const x = marginSize + (availableWidth - imgWidth) / 2;
+                const y = marginSize + (availableHeight - imgHeight) / 2;
                 
                 // Add image to PDF
                 pdfDoc.addImage(imgData, 'JPEG', x, y, imgWidth, imgHeight);
@@ -892,6 +997,7 @@
             // Get settings
             const orientation = isPreview ? previewPageOrientation.value : pageOrientation.value;
             const size = isPreview ? previewPageSize.value : pageSize.value;
+            const margin = isPreview ? previewMarginSize.value : marginSize.value;
             
             // Create PDF
             let pdfDoc;
@@ -915,15 +1021,31 @@
                 const pageWidth = pdfDoc.internal.pageSize.getWidth();
                 const pageHeight = pdfDoc.internal.pageSize.getHeight();
                 
-                let imgWidth = imgWidthInMM;
-                let imgHeight = imgHeightInMM;
-                const ratio = Math.min(pageWidth / imgWidth, pageHeight / imgHeight) * 0.95;
-                imgWidth *= ratio;
-                imgHeight *= ratio;
+                // Calculate margin size in mm
+                let marginSize = 0;
+                switch (margin) {
+                    case 'small':
+                        marginSize = 10;
+                        break;
+                    case 'big':
+                        marginSize = 20;
+                        break;
+                    default: // none
+                        marginSize = 0;
+                }
                 
-                // Center the image on the page
-                const x = (pageWidth - imgWidth) / 2;
-                const y = (pageHeight - imgHeight) / 2;
+                // Calculate available space after margins
+                const availableWidth = pageWidth - (marginSize * 2);
+                const availableHeight = pageHeight - (marginSize * 2);
+                
+                // Calculate ratio to fit image within available space
+                const ratio = Math.min(availableWidth / imgWidthInMM, availableHeight / imgHeightInMM);
+                const imgWidth = imgWidthInMM * ratio;
+                const imgHeight = imgHeightInMM * ratio;
+                
+                // Center the image on the page with margins
+                const x = marginSize + (availableWidth - imgWidth) / 2;
+                const y = marginSize + (availableHeight - imgHeight) / 2;
                 
                 // Add image to PDF
                 pdfDoc.addImage(imgData, 'JPEG', x, y, imgWidth, imgHeight);
@@ -1001,6 +1123,7 @@
         previewMergePdfCheckbox.checked = mergePdfCheckbox.checked;
         previewPageSize.value = pageSize.value;
         previewPageOrientation.value = pageOrientation.value;
+        previewMarginSize.value = marginSize.value;
     </script>
 </body>
 </html>
